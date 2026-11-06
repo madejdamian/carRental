@@ -202,35 +202,4 @@ Cały stan aplikacji (klienci, pojazdy, wypożyczenia) jest trzymany w obiekcie 
 
 ---
 
-## 🗺 Status i plan rozwoju
-
-Projekt jest w trakcie rozwoju.
-
-**Zrealizowane:**
-
-- [x] Rejestracja pojazdów różnych typów
-- [x] Rejestracja klientów z walidacją e-maila
-- [x] Wypożyczenia z kontrolą dostępności terminu
-- [x] Zwrot pojazdu
-- [x] Lista pojazdów, klientów i wypożyczeń
-- [x] Zapis i odczyt stanu z pliku
-- [x] Anulowanie operacji poleceniem `exit`
-
-**Planowane:**
-
-- [ ] Obliczanie kosztu wypożyczenia z dokładnością finansową (`BigDecimal`)
-- [ ] Lista aktualnie dostępnych pojazdów
-- [ ] Historia wypożyczeń wybranego klienta
-- [ ] Raport łącznych przychodów
-- [ ] Ranking najbardziej aktywnych klientów
-- [ ] Sprawdzanie kategorii prawa jazdy klienta przy wypożyczeniu
-- [ ] Walidacja zakresu dat (data zakończenia nie wcześniejsza niż data rozpoczęcia)
-- [ ] Testy jednostkowe (JUnit 5)
-
----
-
-## 👤 Autor
-
-**Damian Madej** – [@madejdamian](https://github.com/madejdamian)
-
 Projekt powstał w celach edukacyjnych.
