@@ -45,7 +45,7 @@ import java.util.Set;
  *
  * 5. Zapis i odczyt danych z pliku.
  *    Przy starcie aplikacja wczytuje poprzedni stan systemu (jeśli plik istnieje).
- *    Przy zakończeniu zapisuje aktualny stan do pliku.
+ *    Zapisuje stan systemu przy kazej zmianie w bazie danych.
  *
  * Wymagania ogólne:
  * - Obsługuj błędne dane wejściowe i sytuacje wyjątkowe (np. brak pojazdu,
@@ -197,7 +197,7 @@ public class Main {
     private static void returnVehicle() {
         System.out.println("Wybierz pojazd ktory chcesz zwrocic:");
         showAllVehicles();
-        String vehicleChoice = readString("Podaj marke i model:");
+        String vehicleChoice = readString("Podaj nr rejestracyjny:");
         String customerChoice = readString("Podaj klienta(email):");
         rentalService.returnVehicle(vehicleChoice, customerChoice);
         saveDatabase();
