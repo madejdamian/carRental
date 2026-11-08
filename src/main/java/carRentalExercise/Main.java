@@ -9,6 +9,7 @@ import carRentalExercise.vehicles.Car;
 import carRentalExercise.vehicles.Motorcycle;
 import carRentalExercise.vehicles.Truck;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -55,9 +56,9 @@ import java.util.Set;
  */
 public class Main {
     private static final Scanner SCANNER = new Scanner(System.in);
-    private static final VehicleService vehicleService = new VehicleService();
-    private static final CustomerService customerService = new CustomerService();
-    private static final RentalService rentalService = new RentalService(vehicleService, customerService);
+    private static VehicleService vehicleService;
+    private static CustomerService customerService;
+    private static RentalService rentalService;
     private static final DataManager dataManager = new DataManager();
     private static AppState APP_STATE;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -65,6 +66,7 @@ public class Main {
 
     public static void main(String[] args) {
         loadDatabase();
+        createServices();
         boolean programIsRunning = true;
 
         while (programIsRunning) {
@@ -83,10 +85,11 @@ public class Main {
                     default -> System.out.println("Niewłaściwy wybór\n");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Zły wybór, wybierz ponownie.");
-
-            } catch (IllegalArgumentException | CancelOperationException e) {
+                System.out.println("Nieprawidlowy format danych.");
+            } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
+            } catch (CancelOperationException e) {
+                System.out.println("Anulowanie operacji.");
             }
         }
     }
@@ -121,10 +124,9 @@ public class Main {
         String brand = readString("Marka:");
         String model = readString("Model:");
         String licensePlate = readString("Nr. rejestracyjny:");
-        double price = readDouble("Cena za dzien:");
+        BigDecimal price = readPrice("Cena za dzien:");
         Vehicle motorcycle = new Motorcycle(brand, model, licensePlate, price, DriverLicenseCategory.CATEGORY_A);
         vehicleService.addVehicleToDatabase(motorcycle);
-        saveDatabase();
         System.out.println("Dodano pojazd do bazy.");
     }
 
@@ -134,11 +136,10 @@ public class Main {
         String brand = readString("Marka:");
         String model = readString("Model:");
         String licensePlate = readString("Nr. rejestracyjny:");
-        double price = readDouble("Cena za dzien:");
+        BigDecimal price = readPrice("Cena za dzien:");
         int seatsNumber = readInt("Ilosc miejsc:");
         Vehicle car = new Car(brand, model, licensePlate, price, seatsNumber, DriverLicenseCategory.CATEGORY_B);
         vehicleService.addVehicleToDatabase(car);
-        saveDatabase();
         System.out.println("Dodano pojazd do bazy.");
     }
 
@@ -147,11 +148,10 @@ public class Main {
         String brand = readString("Marka:");
         String model = readString("Model:");
         String licensePlate = readString("Nr. rejestracyjny:");
-        double price = readDouble("Cena za dzien:");
+        BigDecimal price = readPrice("Cena za dzien:");
         int capacity = readInt("Ładownosc:");
         Vehicle car = new Truck(brand, model, licensePlate, price, capacity, DriverLicenseCategory.CATEGORY_C);
         vehicleService.addVehicleToDatabase(car);
-        saveDatabase();
         System.out.println("Dodano pojazd do bazy.");
 
     }
@@ -163,7 +163,6 @@ public class Main {
         String email = readString("Email:");
         Customer customer = new Customer(name, surname, email);
         customerService.addCustomerToDatabase(customer);
-        saveDatabase();
         System.out.println("Dodano klienta do bazy.");
 
     }
@@ -190,17 +189,15 @@ public class Main {
         LocalDate startDate = readDate("Data startu(dd-mm-rrrr):");
         LocalDate endDate = readDate("Data zakonczenia(dd-mm-rrrr):");
         rentalService.rentVehicle(vehicle, customer, startDate, endDate);
-        saveDatabase();
     }
 
 
     private static void returnVehicle() {
         System.out.println("Wybierz pojazd ktory chcesz zwrocic:");
         showAllVehicles();
-        String vehicleChoice = readString("Podaj nr rejestracyjny:");
-        String customerChoice = readString("Podaj klienta(email):");
-        rentalService.returnVehicle(vehicleChoice, customerChoice);
-        saveDatabase();
+        Vehicle vehicle = readVehicle();
+        Customer customer = readCustomer();
+        rentalService.returnVehicle(vehicle, customer);
     }
 
     private static void dataRaportOperations() {
@@ -266,14 +263,12 @@ public class Main {
 
     private static void loadDatabase() {
         APP_STATE = dataManager.readFile();
-        customerService.setCustomersList(APP_STATE.getCustomers());
-        rentalService.setRentalList(APP_STATE.getRentals());
-        vehicleService.setVehicleList(APP_STATE.getVehicles());
     }
 
-    private static int readInt(String info) {
-        System.out.println(info);
-        return Integer.parseInt(SCANNER.nextLine());
+    private static void createServices() {
+        vehicleService = new VehicleService(APP_STATE, dataManager);
+        customerService = new CustomerService(APP_STATE, dataManager);
+        rentalService = new RentalService(vehicleService, customerService, APP_STATE, dataManager);
     }
 
     private static String readString(String info) {
@@ -285,18 +280,28 @@ public class Main {
         return input;
     }
 
-    private static double readDouble(String info) {
-        System.out.println(info);
-        return Double.parseDouble(SCANNER.nextLine());
+    private static int readInt(String info) {
+        return Integer.parseInt(readString(info));
+    }
+
+    private static BigDecimal readPrice(String info) {
+        while (true) {
+            try {
+                BigDecimal converted = new BigDecimal(readString(info).replace(",", "."));
+                if (!Vehicle.isPriceValid(converted)){
+                    System.out.println("Cena nie moze byc zerowa lub ujemna, wpisz jeszcze raz.");
+                    continue;
+                }
+                return converted;
+            } catch (NumberFormatException e) {
+                System.out.println("Nieprawidlowa liczba, wpisz jeszcze raz.");
+            }
+        }
     }
 
     private static LocalDate readDate(String info) {
-        System.out.println(info);
         while (true) {
-            String date = SCANNER.nextLine();
-            if (date.equalsIgnoreCase("exit")) {
-                throw new CancelOperationException("Wyjscie");
-            }
+            String date = readString(info);
             try {
                 return LocalDate.parse(date, formatter);
             } catch (DateTimeParseException e) {
@@ -323,10 +328,6 @@ public class Main {
                 System.out.println(e.getMessage() + " Podaj nowy adres email:");
             }
         }
-    }
-
-    private static void saveDatabase(){
-        dataManager.saveFile(APP_STATE);
     }
 }
 

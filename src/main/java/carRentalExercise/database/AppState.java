@@ -4,10 +4,13 @@ import carRentalExercise.Customer;
 import carRentalExercise.Rental;
 import carRentalExercise.Vehicle;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Set;
 
 public class AppState implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final Set<Customer> customers;
     private final Set<Rental> rentals;
     private final Set<Vehicle> vehicles;

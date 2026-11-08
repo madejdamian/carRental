@@ -1,20 +1,27 @@
 package carRentalExercise;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public abstract class Vehicle implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final UUID id = UUID.randomUUID();
     private final String brand;
     private final String model;
-    private final double pricePerDay;
+    private final BigDecimal pricePerDay;
     private final List<Rental> rentalList;
     private final String licensePlate;
 
-    public Vehicle(String brand, String model, String licensePlate, double pricePerDay) {
+    public Vehicle(String brand, String model, String licensePlate, BigDecimal pricePerDay) {
+        if (!isPriceValid(pricePerDay)){
+            throw new IllegalArgumentException("Cena nie moze byc zerowa lub ujemna.");
+        }
         this.brand = brand;
         this.model = model;
         this.licensePlate = licensePlate;
@@ -34,7 +41,7 @@ public abstract class Vehicle implements Serializable {
         return model;
     }
 
-    public double getPricePerDay() {
+    public BigDecimal getPricePerDay() {
         return pricePerDay;
     }
 
@@ -61,6 +68,10 @@ public abstract class Vehicle implements Serializable {
             }
         }
         return true;
+    }
+
+    public static boolean isPriceValid(BigDecimal price){
+        return price.compareTo(BigDecimal.ZERO) > 0;
     }
 
 

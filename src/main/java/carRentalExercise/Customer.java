@@ -1,11 +1,15 @@
 package carRentalExercise;
 
+
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Customer implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final String surname;
     private final String email;
@@ -36,7 +40,8 @@ public class Customer implements Serializable {
     public List<DriverLicenseCategory> getDriverLicenseCategories() {
         return new ArrayList<>(driverLicenseCategories);
     }
-    public void addDriverLicenseCategory(DriverLicenseCategory category){
+
+    public void addDriverLicenseCategory(DriverLicenseCategory category) {
         driverLicenseCategories.add(category);
     }
 

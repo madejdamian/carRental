@@ -13,27 +13,29 @@ import java.util.Set;
 public class RentalService {
     private final VehicleService vehicleService;
     private final CustomerService customerService;
-    private Set<Rental> rentalList = new HashSet<>();
-    private static AppState APP_STATE;
-    private static DataManager dataManager = new DataManager();
+    private final Set<Rental> rentalList;
+    private final AppState appState;
+    private final DataManager dataManager;
 
-    public RentalService(VehicleService vehicleService, CustomerService customerService) {
+    public RentalService(VehicleService vehicleService, CustomerService customerService, AppState appState, DataManager dataManager) {
         this.vehicleService = vehicleService;
         this.customerService = customerService;
+        this.appState = appState;
+        this.dataManager = dataManager;
+        rentalList = appState.getRentals();
     }
 
     public void rentVehicle(Vehicle vehicle, Customer customer, LocalDate startDate, LocalDate endDate) {
         Rental rental = new Rental(startDate, endDate, customer, vehicle);
         addRentalToDatabase(rental);
-        dataManager.saveFile(APP_STATE);
+        dataManager.saveFile(appState);
         System.out.println("Wypozyczono pojazd.");
     }
 
-    public void returnVehicle(String vehicleLicensePlate, String customerEmail) {
-        Vehicle vehicle = getVehicle(vehicleLicensePlate);
-        Customer customer = getCustomer(customerEmail);
+    public void returnVehicle(Vehicle vehicle, Customer customer) {
         Rental rental = getRentalByVehicleAndCustomer(vehicle, customer);
         rental.setReturnDate(LocalDate.now());
+        dataManager.saveFile(appState);
         System.out.println("Zwrocono pojazd.");
 
     }
@@ -63,7 +65,6 @@ public class RentalService {
         }
         vehicle.addRental(rental);
         rentalList.add(rental);
-        System.out.println("Wynajeto pojazd.");
     }
 
     private Rental getRentalByVehicleAndCustomer(Vehicle vehicle, Customer customer) {
@@ -75,7 +76,4 @@ public class RentalService {
 
     }
 
-    public void setRentalList(Set<Rental> rentalList) {
-        this.rentalList = rentalList;
-    }
 }

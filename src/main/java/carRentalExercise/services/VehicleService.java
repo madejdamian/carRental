@@ -1,15 +1,22 @@
 package carRentalExercise.services;
 
 import carRentalExercise.Vehicle;
+import carRentalExercise.database.AppState;
+import carRentalExercise.database.DataManager;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class VehicleService {
-    private Set<Vehicle> vehicleList = new HashSet<>();
+    private final Set<Vehicle> vehicleList;
+    private final AppState appState;
+    private final DataManager dataManager;
 
-    public VehicleService() {
+    public VehicleService(AppState appState, DataManager dataManager) {
+        this.appState = appState;
+        this.dataManager = dataManager;
+        vehicleList = appState.getVehicles();
     }
 
     public void addVehicleToDatabase(Vehicle vehicle) {
@@ -17,6 +24,7 @@ public class VehicleService {
             throw new IllegalArgumentException("Pojazd o takim nr rejestracyjnym juz istnieje.");
         }
         vehicleList.add(vehicle);
+        dataManager.saveFile(appState);
 
     }
 
@@ -26,6 +34,8 @@ public class VehicleService {
         } else {
             System.out.println("Brak takiego pojazdu w bazie.");
         }
+        dataManager.saveFile(appState);
+        System.out.println("Usunieto pojazd z bazy danych");
     }
 
     public Vehicle getVehicleById(UUID id) {
@@ -38,10 +48,6 @@ public class VehicleService {
 
     public Set<Vehicle> getVehicleList() {
         return new HashSet<>(vehicleList);
-    }
-
-    public void setVehicleList(Set<Vehicle> vehicleList) {
-        this.vehicleList = vehicleList;
     }
 
     private boolean isVehicleExistInDatabase(Vehicle vehicle) {
