@@ -19,7 +19,7 @@ public abstract class Vehicle implements Serializable {
     private final String licensePlate;
 
     public Vehicle(String brand, String model, String licensePlate, BigDecimal pricePerDay) {
-        if (!isPriceValid(pricePerDay)){
+        if (!isPriceValid(pricePerDay)) {
             throw new IllegalArgumentException("Cena nie moze byc zerowa lub ujemna.");
         }
         this.brand = brand;
@@ -53,24 +53,21 @@ public abstract class Vehicle implements Serializable {
         return new ArrayList<>(rentalList);
     }
 
-    public void addRental(Rental rental){
-            rentalList.add(rental);
+    public void addRental(Rental rental) {
+        rentalList.add(rental);
     }
 
     public boolean checkAvailability(LocalDate startDate, LocalDate endDate) {
         for (Rental rental : rentalList) {
-            LocalDate returnDate = rental.getReturnDate();
-            if (returnDate == null){
-                return false;
-            }
-            if (!startDate.isAfter(rental.getEndDate()) && !endDate.isBefore(rental.getStartDate()) && !returnDate.isBefore(rental.getStartDate())) {
+            if (!(startDate.isAfter(rental.getOccupiedUntil()) ||
+                    endDate.isBefore(rental.getStartDate()))) {
                 return false;
             }
         }
         return true;
     }
 
-    public static boolean isPriceValid(BigDecimal price){
+    public static boolean isPriceValid(BigDecimal price) {
         return price.compareTo(BigDecimal.ZERO) > 0;
     }
 

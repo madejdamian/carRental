@@ -7,6 +7,7 @@ import carRentalExercise.database.AppState;
 import carRentalExercise.database.DataManager;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,7 +34,7 @@ public class RentalService {
     }
 
     public void returnVehicle(Vehicle vehicle, Customer customer) {
-        Rental rental = getRentalByVehicleAndCustomer(vehicle, customer);
+        Rental rental = getStartedRentalByVehicleAndCustomer(vehicle, customer);
         rental.setReturnDate(LocalDate.now());
         dataManager.saveFile(appState);
         System.out.println("Zwrocono pojazd.");
@@ -67,12 +68,14 @@ public class RentalService {
         rentalList.add(rental);
     }
 
-    private Rental getRentalByVehicleAndCustomer(Vehicle vehicle, Customer customer) {
+    private Rental getStartedRentalByVehicleAndCustomer(Vehicle vehicle, Customer customer) {
         return rentalList.stream()
                 .filter(rental -> rental.getCustomer().equals(customer))
                 .filter(rental -> rental.getVehicleId().equals(vehicle.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Brak takiego pojazdu w wynajmie lub brak takiego klienta"));
+                .filter(rental -> rental.getReturnDate() == null)
+                .filter(rental -> !rental.getStartDate().isAfter(LocalDate.now()))
+                .min(Comparator.comparing(Rental::getStartDate))
+                .orElseThrow(() -> new IllegalArgumentException("Brak takiego najmu w bazie."));
 
     }
 
