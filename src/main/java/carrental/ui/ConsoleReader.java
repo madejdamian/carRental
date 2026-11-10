@@ -1,4 +1,7 @@
-package carRentalExercise;
+package carrental.ui;
+
+import carrental.model.Customer;
+import carrental.model.Vehicle;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -8,10 +11,7 @@ import java.util.Scanner;
 
 public class ConsoleReader {
     private static final Scanner SCANNER = new Scanner(System.in);
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-    public ConsoleReader() {
-    }
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public LocalDate readEndDate(String info, LocalDate startDate) {
         while (true) {
@@ -27,7 +27,7 @@ public class ConsoleReader {
     public LocalDate readDate(String info) {
         while (true) {
             try {
-                LocalDate date = LocalDate.parse(readString(info), formatter);
+                LocalDate date = LocalDate.parse(readString(info), FORMATTER);
                 if (date.isBefore(LocalDate.now())) {
                     System.out.println("Nie możesz podac daty z przeszłości, podaj nowa date.");
                     continue;
@@ -51,6 +51,17 @@ public class ConsoleReader {
             } catch (NumberFormatException e) {
                 System.out.println("Nieprawidlowa liczba, wpisz jeszcze raz.");
             }
+        }
+    }
+
+    public String readEmail(String info) {
+        while (true) {
+            String email = readString(info).toLowerCase();
+            if (!Customer.validateEmail(email)) {
+                System.out.println("Nieprawidlowy format email, wpisz jeszcze raz.");
+                continue;
+            }
+            return email;
         }
     }
 

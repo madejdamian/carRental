@@ -1,8 +1,8 @@
-package carRentalExercise.services;
+package carrental.service;
 
-import carRentalExercise.Customer;
-import carRentalExercise.database.AppState;
-import carRentalExercise.database.DataManager;
+import carrental.model.Customer;
+import carrental.persistence.AppState;
+import carrental.persistence.DataManager;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +19,7 @@ public class CustomerService   {
     }
 
     public void addCustomerToDatabase(Customer customer) {
-        if (isCustomerExistInDatabase(customer)) {
+        if (isCustomerExistInDatabase(customer.getEmail())) {
             throw new IllegalArgumentException("Klient o takim adresie juz istnieje.");
         }
         customersList.add(customer);
@@ -30,9 +30,9 @@ public class CustomerService   {
         return new HashSet<>(customersList);
     }
 
-    private boolean isCustomerExistInDatabase(Customer customer) {
+    public boolean isCustomerExistInDatabase(String customerEmail) {
         for (Customer c : customersList) {
-            if (c.getEmail().equals(customer.getEmail())) {
+            if (c.getEmail().equals(customerEmail)) {
                 return true;
             }
         }

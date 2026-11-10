@@ -1,15 +1,14 @@
-package carRentalExercise;
+package carrental.ui;
 
-import carRentalExercise.services.CustomerService;
-import carRentalExercise.services.RentalService;
-import carRentalExercise.services.VehicleService;
-import carRentalExercise.vehicles.Car;
-import carRentalExercise.vehicles.Motorcycle;
-import carRentalExercise.vehicles.Truck;
+import carrental.model.*;
+import carrental.service.CustomerService;
+import carrental.service.RentalService;
+import carrental.service.VehicleService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class RentalMenu {
@@ -83,9 +82,9 @@ public class RentalMenu {
         System.out.println("===Podaj dane motocykla ===");
         String brand = consoleReader.readString("Marka:");
         String model = consoleReader.readString("Model:");
-        String licensePlate = consoleReader.readString("Nr. rejestracyjny:");
+        String licensePlate = consoleReader.readString("Nr. rejestracyjny:").toUpperCase();
         BigDecimal price = consoleReader.readPrice("Cena za dzien:");
-        Vehicle motorcycle = new Motorcycle(brand, model, licensePlate, price, DriverLicenseCategory.CATEGORY_A);
+        Vehicle motorcycle = new Motorcycle(brand, model, licensePlate, price);
         vehicleService.addVehicleToDatabase(motorcycle);
         System.out.println("Dodano pojazd do bazy.");
     }
@@ -95,10 +94,10 @@ public class RentalMenu {
         System.out.println("===Podaj dane samochodu ===");
         String brand = consoleReader.readString("Marka:");
         String model = consoleReader.readString("Model:");
-        String licensePlate = consoleReader.readString("Nr. rejestracyjny:");
+        String licensePlate = consoleReader.readString("Nr. rejestracyjny:").toUpperCase();
         BigDecimal price = consoleReader.readPrice("Cena za dzien:");
         int seatsNumber = consoleReader.readInt("Ilosc miejsc:");
-        Vehicle car = new Car(brand, model, licensePlate, price, seatsNumber, DriverLicenseCategory.CATEGORY_B);
+        Vehicle car = new Car(brand, model, licensePlate, price, seatsNumber);
         vehicleService.addVehicleToDatabase(car);
         System.out.println("Dodano pojazd do bazy.");
     }
@@ -107,24 +106,32 @@ public class RentalMenu {
         System.out.println("===Podaj dane ciezarowki ===");
         String brand = consoleReader.readString("Marka:");
         String model = consoleReader.readString("Model:");
-        String licensePlate = consoleReader.readString("Nr. rejestracyjny:");
+        String licensePlate = consoleReader.readString("Nr. rejestracyjny:").toUpperCase();
         BigDecimal price = consoleReader.readPrice("Cena za dzien:");
         int capacity = consoleReader.readInt("Ładownosc:");
-        Vehicle car = new Truck(brand, model, licensePlate, price, capacity, DriverLicenseCategory.CATEGORY_C);
+        Vehicle car = new Truck(brand, model, licensePlate, price, capacity);
         vehicleService.addVehicleToDatabase(car);
         System.out.println("Dodano pojazd do bazy.");
-
     }
 
     private void registerCustomer() {
         System.out.println("=== Podaj dane klienta ===");
         String name = consoleReader.readString("Imie:");
         String surname = consoleReader.readString("Nazwisko:");
-        String email = consoleReader.readString("Email:");
+        String email = readAndCheckEmailInDatabase("Email:");
         Customer customer = new Customer(name, surname, email);
         customerService.addCustomerToDatabase(customer);
         System.out.println("Dodano klienta do bazy.");
+    }
 
+    private String readAndCheckEmailInDatabase(String info) {
+        while (true) {
+            String email = consoleReader.readEmail(info);
+            if (!customerService.isCustomerExistInDatabase(email)) {
+                return email;
+            }
+            System.out.println("Klient o takim adresie juz istnieje.");
+        }
     }
 
     private void rentalOperations() {
@@ -155,7 +162,7 @@ public class RentalMenu {
     private void returnVehicle() {
         System.out.println("Wybierz pojazd ktory chcesz zwrocic:");
         showAllVehicles();
-        Vehicle vehicle =readVehicle();
+        Vehicle vehicle = readVehicle();
         Customer customer = readCustomer();
         rentalService.returnVehicle(vehicle, customer);
     }
@@ -165,6 +172,10 @@ public class RentalMenu {
         System.out.println("1. Lista wszystkich pojazdów.");
         System.out.println("2. Lista wszystkich klientów.");
         System.out.println("3. Lista wszystkich wypożyczeń.");
+        System.out.println("4. Pokaż łączny przychód.");
+        System.out.println("5. Pokaż aktualnie dostepne pojazdy.");
+        System.out.println("6. Pokaż historie klienta.");
+        System.out.println("7. Pokaż najaktywniejszych klientow.");
 
 
         int choice = consoleReader.readInt("Wybierz opcje:");
@@ -172,8 +183,39 @@ public class RentalMenu {
             case 1 -> showAllVehicles();
             case 2 -> showAllCustomers();
             case 3 -> showAllRentals();
+            case 4 -> showTotalIncome();
+            case 5 -> showAvailableVehicles();
+            case 6 -> showCustomerHistory();
+            case 7 -> showMostActiveUsers();
             default -> System.out.println("Niewlasciwy wybor:");
         }
+    }
+
+    private void showMostActiveUsers() {
+        System.out.println("Najaktywniejsi klienci, wedlug liczby wypozyczen:");
+        for (Customer c : rentalService.getMostActiveUsersList()) {
+            System.out.println("- " + c.getName() + " " + c.getSurname());
+        }
+    }
+
+    private void showCustomerHistory() {
+        List<Rental> history = rentalService.getCustomerHistory(readCustomer());
+        System.out.println("Historia wypozyczen klienta: ");
+        for (Rental rental : history) {
+            System.out.println("- " + rental);
+        }
+    }
+
+    private void showAvailableVehicles() {
+        System.out.println("Lista aktualnie dostepnych pojazdow:");
+        List<Vehicle> vehicles = rentalService.getAvailableVehicles();
+        for (Vehicle v : vehicles) {
+            System.out.println("- " + v.getBrand() + " " + v.getModel());
+        }
+    }
+
+    private void showTotalIncome() {
+        System.out.println("Łączny przychód to: " + rentalService.getTotalIncome());
     }
 
     private void showAllVehicles() {
@@ -199,7 +241,7 @@ public class RentalMenu {
             return;
         }
         for (Customer customer : customers) {
-            System.out.println(counter + ". " + customer.getName() + " " + customer.getSurname());
+            System.out.println(counter + ". " + customer + ", " + customer.getEmail());
             counter++;
         }
     }
@@ -212,11 +254,8 @@ public class RentalMenu {
             return;
         }
         for (Rental rental : rentalService.getRentalList()) {
-            Vehicle vehicle = vehicleService.getVehicleById(rental.getVehicleId());
             Customer customer = rental.getCustomer();
-            System.out.println(counter + ". Auto: " + vehicle.getBrand() + " " + vehicle.getModel() + ", Klient: " + customer.getName() + " "
-                    + customer.getSurname() + ", wynajem od: " + rental.getStartDate().format(DateTimeFormatter.ISO_DATE)
-                    + " do " + rental.getEndDate().format(DateTimeFormatter.ISO_DATE));
+            System.out.println(counter + ". " + customer + ", " + rental);
             counter++;
         }
     }
@@ -224,7 +263,7 @@ public class RentalMenu {
     private Customer readCustomer() {
         while (true) {
             try {
-                return rentalService.getCustomer(consoleReader.readString("Podaj klienta(email):"));
+                return rentalService.getCustomer(consoleReader.readEmail("Podaj klienta(email):"));
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage() + " Podaj nowy adres email:");
             }

@@ -1,10 +1,12 @@
-package carRentalExercise;
+package carrental;
 
-import carRentalExercise.database.AppState;
-import carRentalExercise.database.DataManager;
-import carRentalExercise.services.CustomerService;
-import carRentalExercise.services.RentalService;
-import carRentalExercise.services.VehicleService;
+import carrental.persistence.AppState;
+import carrental.persistence.DataManager;
+import carrental.service.CustomerService;
+import carrental.service.RentalService;
+import carrental.service.VehicleService;
+import carrental.ui.ConsoleReader;
+import carrental.ui.RentalMenu;
 
 /*
  * ZADANIE: System wypożyczalni samochodów

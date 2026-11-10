@@ -1,8 +1,8 @@
-package carRentalExercise.database;
+package carrental.persistence;
 
-import carRentalExercise.Customer;
-import carRentalExercise.Rental;
-import carRentalExercise.Vehicle;
+import carrental.model.Customer;
+import carrental.model.Rental;
+import carrental.model.Vehicle;
 
 import java.io.Serial;
 import java.io.Serializable;

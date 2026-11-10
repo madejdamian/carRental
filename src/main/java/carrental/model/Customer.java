@@ -1,4 +1,4 @@
-package carRentalExercise;
+package carrental.model;
 
 
 import java.io.Serial;
@@ -10,10 +10,11 @@ import java.util.regex.Pattern;
 public class Customer implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.+-]+@[\\w-]+\\.[a-z]{2,}$");
     private final String name;
     private final String surname;
     private final String email;
-    private final Set<DriverLicenseCategory> driverLicenseCategories;
+
 
     public Customer(String name, String surname, String email) {
         if (!validateEmail(email)) {
@@ -22,8 +23,7 @@ public class Customer implements Serializable {
         this.email = email;
         this.name = name;
         this.surname = surname;
-        this.driverLicenseCategories = new HashSet<>();
-    }
+            }
 
     public String getName() {
         return name;
@@ -37,18 +37,15 @@ public class Customer implements Serializable {
         return email;
     }
 
-    public List<DriverLicenseCategory> getDriverLicenseCategories() {
-        return new ArrayList<>(driverLicenseCategories);
-    }
 
-    public void addDriverLicenseCategory(DriverLicenseCategory category) {
-        driverLicenseCategories.add(category);
-    }
-
-    private boolean validateEmail(String email) {
-        Pattern pattern = Pattern.compile("^[\\w.+-]+@[\\w-]+\\.[a-z]{2,}$");
-        Matcher matcher = pattern.matcher(email);
+    public static boolean validateEmail(String email) {
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
         return matcher.matches();
+    }
+
+    @Override
+    public String toString() {
+        return name + " " + surname;
     }
 
     @Override

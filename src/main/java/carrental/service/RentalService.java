@@ -1,15 +1,16 @@
-package carRentalExercise.services;
+package carrental.service;
 
-import carRentalExercise.Customer;
-import carRentalExercise.Rental;
-import carRentalExercise.Vehicle;
-import carRentalExercise.database.AppState;
-import carRentalExercise.database.DataManager;
+import carrental.model.Customer;
+import carrental.model.Rental;
+import carrental.model.Vehicle;
+import carrental.persistence.AppState;
+import carrental.persistence.DataManager;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class RentalService {
     private final VehicleService vehicleService;
@@ -38,7 +39,6 @@ public class RentalService {
         rental.setReturnDate(LocalDate.now());
         dataManager.saveFile(appState);
         System.out.println("Zwrocono pojazd.");
-
     }
 
     public Set<Rental> getRentalList() {
@@ -47,7 +47,7 @@ public class RentalService {
 
     public Vehicle getVehicle(String vehicleLicensePlate) {
         return vehicleService.getVehicleList().stream()
-                .filter(vehicle -> vehicle.getLicensePlate().equals(vehicleLicensePlate))
+                .filter(vehicle -> vehicle.getLicensePlate().equalsIgnoreCase(vehicleLicensePlate))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Brak takiego pojazdu."));
     }
@@ -59,10 +59,41 @@ public class RentalService {
                 .orElseThrow(() -> new IllegalArgumentException("Brak takiego klienta."));
     }
 
+    public List<Vehicle> getAvailableVehicles() {
+        return appState.getVehicles().stream()
+                .filter(vehicle -> vehicle.checkAvailability(LocalDate.now(), LocalDate.now()))
+                .toList();
+    }
+
+    public List<Rental> getCustomerHistory(Customer customer) {
+        return rentalList.stream()
+                .filter(rental -> rental.getCustomer().equals(customer))
+                .toList();
+    }
+
+    public BigDecimal getTotalIncome() {
+        return rentalList.stream()
+                .filter(rental -> rental.getReturnDate() != null)
+                .map(Rental::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public List<Customer> getMostActiveUsersList() {
+        Map<Customer, Long> map = rentalList.stream()
+                .collect(Collectors.groupingBy(Rental::getCustomer, Collectors.counting()));
+
+        return map.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(3)
+                .map(Map.Entry::getKey)
+                .toList();
+    }
+
     private void addRentalToDatabase(Rental rental) {
-        Vehicle vehicle = vehicleService.getVehicleById(rental.getVehicleId());
+        Vehicle vehicle = rental.getVehicle();
         if (!vehicle.checkAvailability(rental.getStartDate(), rental.getEndDate())) {
-            throw new IllegalArgumentException("Pojazd niedostepny");
+            throw new IllegalArgumentException("Pojazd niedostepny w tym terminie. ");
         }
         vehicle.addRental(rental);
         rentalList.add(rental);
@@ -71,12 +102,12 @@ public class RentalService {
     private Rental getStartedRentalByVehicleAndCustomer(Vehicle vehicle, Customer customer) {
         return rentalList.stream()
                 .filter(rental -> rental.getCustomer().equals(customer))
-                .filter(rental -> rental.getVehicleId().equals(vehicle.getId()))
+                .filter(rental -> rental.getVehicle().equals(vehicle))
                 .filter(rental -> rental.getReturnDate() == null)
                 .filter(rental -> !rental.getStartDate().isAfter(LocalDate.now()))
                 .min(Comparator.comparing(Rental::getStartDate))
                 .orElseThrow(() -> new IllegalArgumentException("Brak takiego najmu w bazie."));
-
     }
+
 
 }

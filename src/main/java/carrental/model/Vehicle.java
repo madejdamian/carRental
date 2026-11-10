@@ -1,4 +1,4 @@
-package carRentalExercise;
+package carrental.model;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public abstract class Vehicle implements Serializable {
@@ -71,5 +72,15 @@ public abstract class Vehicle implements Serializable {
         return price.compareTo(BigDecimal.ZERO) > 0;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Vehicle vehicle = (Vehicle) o;
+        return Objects.equals(id, vehicle.id);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }

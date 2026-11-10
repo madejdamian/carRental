@@ -1,4 +1,4 @@
-package carRentalExercise;
+package carrental.ui;
 
 public class CancelOperationException extends RuntimeException {
     public CancelOperationException(String message) {

@@ -1,8 +1,8 @@
-package carRentalExercise.database;
+package carrental.persistence;
 
-import carRentalExercise.Customer;
-import carRentalExercise.Rental;
-import carRentalExercise.Vehicle;
+import carrental.model.Customer;
+import carrental.model.Rental;
+import carrental.model.Vehicle;
 
 import java.io.*;
 import java.util.HashSet;
@@ -10,9 +10,6 @@ import java.util.Set;
 
 public class DataManager {
     private static final String FILE_PATH = "database.dat";
-
-    public DataManager() {
-    }
 
     public AppState readFile() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_PATH))){

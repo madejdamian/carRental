@@ -1,12 +1,11 @@
-package carRentalExercise.services;
+package carrental.service;
 
-import carRentalExercise.Vehicle;
-import carRentalExercise.database.AppState;
-import carRentalExercise.database.DataManager;
+import carrental.model.Vehicle;
+import carrental.persistence.AppState;
+import carrental.persistence.DataManager;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 public class VehicleService {
     private final Set<Vehicle> vehicleList;
@@ -25,24 +24,6 @@ public class VehicleService {
         }
         vehicleList.add(vehicle);
         dataManager.saveFile(appState);
-
-    }
-
-    public void removeVehicleFromDatabase(Vehicle vehicle) {
-        if (vehicleList.contains(vehicle)) {
-            vehicleList.remove(vehicle);
-        } else {
-            System.out.println("Brak takiego pojazdu w bazie.");
-        }
-        dataManager.saveFile(appState);
-        System.out.println("Usunieto pojazd z bazy danych");
-    }
-
-    public Vehicle getVehicleById(UUID id) {
-        return vehicleList.stream()
-                .filter(vehicle -> vehicle.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Brak takiego pojazdu"));
 
     }
 
